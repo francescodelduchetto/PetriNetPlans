@@ -1,0 +1,9 @@
+*if* FailureSituation_human 	    *during* doNothing *do* saveTrajectory; recordRecoveryDemonstration; restart_plan
+*if* FailureSituation_falsepositive *during* doNothing *do* saveTrajectory_fp; restart_plan
+*if* FailureSituation_autodetected  *during* doNothing *do* recoverAction; restart_plan
+
+*if* FailureSituation_human 	    *during* goto *do* saveTrajectory; recordRecoveryDemonstration; restart_action
+*if* FailureSituation_falsepositive *during* goto *do* saveTrajectory_fp; restart_action
+*if* FailureSituation_autodetected  *during* goto *do* recoverAction; restart_action
+
+*if* FailureSituation_falsepositive *during* recoverAction *do* saveTrajectory_fp; restart_plan
