@@ -1,7 +1,0 @@
-string goal		# optional, necessary if state not specified
-string filepath 	# optional, necessary if goal not specified
-string[] state_conditions		# optional (list of conditions that represent the state), if missing all the conditions are assumed
-string[] action_conditions		# optional (list of conditions that represent the action), if missing it is inferred with the Actions classes present
-bool save_bag
----
-int8 succeeded

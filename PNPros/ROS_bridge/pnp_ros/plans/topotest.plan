@@ -1,4 +1,0 @@
-<CurrentNode_WayPoint1? goto_WayPoint5 : (not CurrentNode_WayPoint1) ? goto_WayPoint1>
-goto_WayPoint2;
-goto_WayPoint3;
-goto_WayPoint4;
