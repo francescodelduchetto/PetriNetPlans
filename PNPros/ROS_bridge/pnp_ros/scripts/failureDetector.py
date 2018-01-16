@@ -17,8 +17,6 @@ current_scan_window = []
 current_scan_window_data = None
 model = None
 model_lock = threading.Lock()
-failure_confirmed = True
-last_failure_trace = None
 
 def receive_scan_history(data):
     global current_scan_window, current_scan_window_data
@@ -41,12 +39,9 @@ def save_new_trajectory(type="positive", trace_data=None):
     rospy.loginfo("Saving failed trajectory in %s" % filename)
 
 def  failure_confirmation(data):
-    global failure_confirmed, last_failure_trace
     if data.cause == "falsepositive":
-        save_new_trajectory(type="negative", trace_data=last_failure_trace)
+        save_new_trajectory(type="negative", trace_data=data.trace)
         load_model("")
-
-    failure_confirmed = True
 
 def load_model(_):
     global model, model_lock
@@ -115,7 +110,7 @@ if __name__ == "__main__":
     signal_pub = rospy.Publisher("failure_signal", ActionFailure, latch=True, queue_size=10)
 
     ## failure trace Publisher
-    #trace_pub = rospy.Publisher("failure_trace", Float64MultiArray, latch=True, queue_size=10)
+    trace_pub = rospy.Publisher("failure_trace", Float64MultiArray, latch=True, queue_size=10)
 
     # GUI for human signaling
     window = tk.Tk()
@@ -146,7 +141,7 @@ if __name__ == "__main__":
         if model is None:
             pass
             #rospy.loginfo('%s/detector_model.gp' % folder + " not found")
-        elif len(current_scan_window) > 0 and failure_confirmed:
+        elif len(current_scan_window) > 0:
             failure = False
 
             ## Make prediction
@@ -165,14 +160,14 @@ if __name__ == "__main__":
 
                     msg = ActionFailure()
                     msg.stamp = rospy.Time.now()
+                    msg.trace = current_scan_window_data
                     msg.cause = "autodetected"
                     signal_pub.publish(msg)
-                    last_failure_trace = current_scan_window_data
-                    #trace_pub.publish(current_scan_window_data)
+                    trace_pub.publish(current_scan_window_data)
                     print " Sent failure_signal"
-                    failure_confirmed = False
-                    # here we notify the failure, but we want a confirmation and
-                    # we want to hear back in case it was a false positive....
+
+                    # wait in order to not send too many failure signals
+                    time.sleep(2)
 
         rate.sleep()
 

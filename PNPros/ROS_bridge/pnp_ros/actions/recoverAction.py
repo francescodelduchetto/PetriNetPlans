@@ -8,6 +8,7 @@ from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID
 from pnp_msgs.msg import ActionFailure
 from AbstractAction import AbstractAction
+from str_msgs.msg import Float64MultiArray
 
 class recoverAction(AbstractAction):
 
@@ -24,8 +25,14 @@ class recoverAction(AbstractAction):
         twist.angular.z = 0.
         pub.publish(twist)
 
-        # Ask for confirmation by human
+        ## Ask for confirmation by human
+
+        # confirmation publisher
         conf_pub = rospy.Publisher("failure_signal_confirmation", ActionFailure, latch=True, queue_size=10)
+
+        # read the failure trace_data
+        failure_trace = rospy.wait_for_message("failure_trace", Float64MultiArray, timeout=1)
+
 
         window = tk.Tk()
         self.confirmed = None
@@ -60,6 +67,7 @@ class recoverAction(AbstractAction):
             # send failure confirmation
             msg = ActionFailure()
             msg.stamp = rospy.Time.now()
+            msg.trace = failure_trace
             msg.cause = "positive"
             conf_pub.publish(msg)
             # start recovery service
@@ -71,6 +79,7 @@ class recoverAction(AbstractAction):
             # send failure confirmation
             msg = ActionFailure()
             msg.stamp = rospy.Time.now()
+            msg.trace = failure_trace
             msg.cause = "falsepositive"
             conf_pub.publish(msg)
             ### NOTE do not makes sense anymore to send this
@@ -86,6 +95,7 @@ class recoverAction(AbstractAction):
             # send failure confirmation
             msg = ActionFailure()
             msg.stamp = rospy.Time.now()
+            msg.trace = failure_trace
             msg.cause = "dunno"
             conf_pub.publish(msg)
             # finished action
