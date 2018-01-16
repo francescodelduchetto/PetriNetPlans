@@ -24,54 +24,10 @@ class recoverAction(AbstractAction):
         twist.angular.z = 0.
         pub.publish(twist)
 
-        # Ask for confirmation by human
-        window = tk.Tk()
-        self.confirmed = None
-
-        def confirm_y():
-            self.confirmed = True
-            window.destroy()
-
-        def confirm_n():
-            self.confirmed = False
-            window.destroy()
-
-        def confirm_d():
-            window.destroy()
-
-        label = ttk.Label(window, text="Was it actually a dangerous situation?")
-        label.pack()
-        by = ttk.Button(window, text="Yes", command = confirm_y)
-        bn = ttk.Button(window, text="No", command = confirm_n)
-        bd = ttk.Button(window, text="Dunno", command = confirm_d)
-        by.pack()
-        bn.pack()
-        bd.pack()
-        window.mainloop()
-
-        # NOTE: always execute
-        #self.confirmed = True
-
-        print "confirmed: ", self.confirmed
-
-        if self.confirmed == True:
-            start_sp = rospy.ServiceProxy("start_recovery_execution", Empty)
-            start_sp()
-            self.params[len(self.params):] = [rospy.Time.now().to_sec()]
-            self.params[len(self.params):] = ["recovering"]
-        elif self.confirmed == False:
-            ## signal wrong failure detection
-            pub = rospy.Publisher("failure_signal", ActionFailure, queue_size=10, latch=True)
-            msg = ActionFailure()
-            msg.stamp = rospy.Time.now()
-            msg.cause = "falsepositive"
-            pub.publish(msg)
-
-            # finished action
-            self.params[len(self.params):] = ["done"]
-        else:
-            # finished action
-            self.params[len(self.params):] = ["done"]
+        start_sp = rospy.ServiceProxy("start_recovery_execution", Empty)
+        start_sp()
+        self.params[len(self.params):] = [rospy.Time.now().to_sec()]
+        self.params[len(self.params):] = ["recovering"]
 
     def _stop_action(self):
         if self.params[-1] == "recovering":
@@ -80,9 +36,6 @@ class recoverAction(AbstractAction):
 
     @classmethod
     def is_goal_reached(cls, params):
-        if len(params) > 0 and params[-1] == "done":
-            return True
-
         if len(params) > 1:
             elapsed_time = rospy.Time.now().to_sec() - params[-2]
             if params[-1] == "recovering" and elapsed_time > 3:

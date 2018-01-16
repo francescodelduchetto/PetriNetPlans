@@ -23,7 +23,28 @@ def receive_scan_history(data):
     current_scan_window_data = data
     current_scan_window = data.data[:]
 
-def load_model(data):
+def save_new_trajectory(type="positive", failure_trace=None):
+    global current_scan_window_data
+
+    folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
+    if type == "negative":
+        scan_window = current_scan_window_data
+        filename = '%s/neg_%s.traj' % (folder, rospy.Time.now().to_nsec())
+    elif type == "falsepositive" and failure_trace != None:
+        # take the trace that led to the false positive failure
+        scan_window = failure_trace
+        filename = '%s/neg_%s.traj' % (folder, rospy.Time.now().to_nsec())
+    elif type == "positive":
+        scan_window = current_scan_window_data
+        filename = '%s/%s.traj' % (folder, rospy.Time.now().to_nsec())
+
+    if scan_window:
+        pickle.dump(scan_window.data, open(filename, "wb"))
+        rospy.loginfo("Saving failed trajectory in %s" % filename)
+    else:
+        rospy.logwarn("Scan window not received")
+
+def load_model(_):
     global model, model_lock
 
     folder = '%s/workspaces/museum_ws/data/GPmodels'  % os.path.expanduser("~")
@@ -57,6 +78,38 @@ def load_model(data):
         # release the lock
         model_lock.release()
 
+def ask_failure_confirmation():
+    # Ask for confirmation by human
+    window = tk.Tk()
+    confirmed = None
+
+    def confirm_y():
+        confirmed = True
+        window.destroy()
+
+    def confirm_n():
+        confirmed = False
+        window.destroy()
+
+    def confirm_d():
+        window.destroy()
+
+    label = ttk.Label(window, text="Was it actually a dangerous situation?")
+    label.pack()
+    by = ttk.Button(window, text="Yes", command = confirm_y)
+    bn = ttk.Button(window, text="No", command = confirm_n)
+    bd = ttk.Button(window, text="Dunno", command = confirm_d)
+    by.pack()
+    bn.pack()
+    bd.pack()
+    window.mainloop()
+
+    # NOTE: always execute
+    #self.confirmed = True
+
+    print "confirmed: ", confirmed
+    return confirmed
+
 
 if __name__ == "__main__":
     #global current_scan_window
@@ -71,22 +124,27 @@ if __name__ == "__main__":
     rospy.Subscriber("scan_history", Float64MultiArray, receive_scan_history)
 
     # failure model updated
-    rospy.Subscriber("failure_model_updated", String, load_model)
+    #rospy.Subscriber("failure_model_updated", String, load_model)
 
     # failure Publisher
     signal_pub = rospy.Publisher("failure_signal", ActionFailure, latch=True, queue_size=10)
 
-    # failure trace Publisher
-    trace_pub = rospy.Publisher("failure_trace", Float64MultiArray, latch=True, queue_size=10)
+    ## failure trace Publisher
+    #trace_pub = rospy.Publisher("failure_trace", Float64MultiArray, latch=True, queue_size=10)
 
     # GUI for human signaling
     window = tk.Tk()
 
     def human_signal_failure():
+        # save the failure trajectory
+        save_new_trajectory()
+        # publish the failure
         msg = ActionFailure()
         msg.stamp = rospy.Time.now()
         msg.cause = "human"
         signal_pub.publish(msg)
+        # update the model
+        load_model()
 
     label = ttk.Label(window, text="Failure signaller")
     label.pack()
@@ -109,37 +167,35 @@ if __name__ == "__main__":
             ## Make prediction
             Xtest = np.array(current_scan_window); Xtest.shape = (1, len(current_scan_window))
 
-            # acquire the lock on the model
-            model_lock.acquire()
-            #print "predicting"
             try:
+                # acquire the lock on the model
+                model_lock.acquire()
                 (Yp, var) = model.predict(Xtest)
+                model_lock.release()
             except:
                 rospy.logwarn("Errore while predicting")
             else:
-                #print Yp[0][0]
                 if Yp[0][0] != prev_Yp and Yp > 0.75:
                     prev_Yp = Yp[0][0]
 
-                    failure = True
-                    #rospy.logerr("FAILURE AUTO-DETECTED, acc: " + str(Yp) + " var: " + str(var))
-            #    elif Yp < 0.5 and random.random() < 0.02:
-            #        # Save a negative trajectory with 10% probability
-            #        folder = '%s/catkin_ws/data/detect_trajectories'  % os.path.expanduser("~")
-            #        filename = '%s/neg_%s.traj' % (folder, rospy.Time.now().to_nsec())
+                    # save current scan window
+                    failure_window = current_scan_window
 
-            #        pickle.dump(current_scan_window, open(filename, "wb"))
-            #        rospy.loginfo("!!! Saving negative failed trajectory in %s" % filename)
+                    # Ask for failure confirmation to humans
+                    failure = ask_failure_confirmation()
 
-                if failure:
-                    msg = ActionFailure()
-                    msg.stamp = rospy.Time.now()
-                    msg.cause = "autodetected"
-                    signal_pub.publish(msg)
-                    trace_pub.publish(current_scan_window_data)
-                    print " Sent failure_signal"
-            finally:
-                model_lock.release()
+                    if failure:
+                        msg = ActionFailure()
+                        msg.stamp = rospy.Time.now()
+                        msg.cause = "autodetected"
+                        signal_pub.publish(msg)
+                        print " Sent failure_signal"
+                        #trace_pub.publish(current_scan_window_data)
+                    else:
+                        #save false positive window
+                        save_new_trajectory(type="falsepositive", failure_trace=failure_window)
+                        #update the model
+                        load_model()
 
         rate.sleep()
 

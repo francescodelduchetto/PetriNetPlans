@@ -1,3 +1,5 @@
+# NOTE: ACTION DEPRECATED
+
 import os
 import rospy
 import pickle

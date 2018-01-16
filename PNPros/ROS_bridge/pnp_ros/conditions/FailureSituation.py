@@ -18,7 +18,7 @@ class FailureSituation(AbstractTopicCondition):
             cause = str(params[0])
 
         if self.last_data is not None:
-            if (rospy.Time.now().to_sec() - self.last_data.stamp.to_sec()) < 1:
+            if (rospy.Time.now().to_sec() - self.last_data.stamp.to_sec()) < 0.5:
                 if cause is not None:
                     return cause == self.last_value
                 else:
