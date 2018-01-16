@@ -52,67 +52,45 @@ def load_model(_):
     global model, model_lock
 
     folder = '%s/workspaces/museum_ws/data/GPmodels'  % os.path.expanduser("~")
+    ## Train the model with the new trajectory
+    X = []
+    negX = []
+    for filename in os.listdir(folder):
+        filepath = folder + "/" + filename
+        if filename.endswith(".traj"):
+            if filename.startswith("neg"):
+                negX.append(pickle.load(open(filepath, "rb")))
+            else:
+                X.append(pickle.load(open(filepath, "rb")))
+    Y = [1] * len(X) + [0] * len(negX); Y = np.array(Y); Y.shape = (len(Y), 1)
+    X += negX; X = np.array(X)
+    print "INPUT DATA SIZE: ", X.shape
+    print "OUTPUT DATA SIZE: ", Y.shape
+
     # acquire permission to modify the model
     model_lock.acquire()
     try:
-        model_params = np.load('%s/detector_model_params.npy' % folder)
-        X = np.load('%s/detector_model_X.npy' % folder)
-        Y = np.load('%s/detector_model_Y.npy' % folder)
-    except IOError:
-        pass
-    else:
-        print "X", X.shape, "Y", Y.shape
+        # define model
         multiLS = False
         LS = 400. #was 120.
         F_DIM = len(X[0])
         kernelExpo = GPy.kern.Linear(input_dim=F_DIM,
                                           #lengthscale=LS,
                                           ARD=multiLS)
-        model = GPy.models.GPClassification(X, Y, kernel=kernelExpo, initialize=False)
-        model.update_model(False) # do not call the underlying expensive algebra on load
-        model.initialize_parameter() # Initialize the parameters (connect the parameters up)
+        model = GPy.models.GPClassification(X, Y, kernel=kernelExpo)
+        # Constrain all parameters to be positive
         #model['.*len'] = 10.
-        #print model_params.shape, model_params
-        model[:] = model_params # Load the parameters
-        model.update_model(True) # Call the algebra only once
+
+        # optimize model
+        model.optimize()
+    except:
+        pass
+    else:
         print "failureDetector"
         print model
-        #model.optimize()
     finally:
         # release the lock
         model_lock.release()
-
-def ask_failure_confirmation():
-    # Ask for confirmation by human
-    window = tk.Tk()
-    confirmed = None
-
-    def confirm_y():
-        confirmed = True
-        window.destroy()
-
-    def confirm_n():
-        confirmed = False
-        window.destroy()
-
-    def confirm_d():
-        window.destroy()
-
-    label = ttk.Label(window, text="Was it actually a dangerous situation?")
-    label.pack()
-    by = ttk.Button(window, text="Yes", command = confirm_y)
-    bn = ttk.Button(window, text="No", command = confirm_n)
-    bd = ttk.Button(window, text="Dunno", command = confirm_d)
-    by.pack()
-    bn.pack()
-    bd.pack()
-    window.mainloop()
-
-    # NOTE: always execute
-    #self.confirmed = True
-
-    print "confirmed: ", confirmed
-    return confirmed
 
 
 if __name__ == "__main__":
