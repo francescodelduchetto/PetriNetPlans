@@ -1,7 +1,6 @@
 import os
 import rospy
 import Tkinter as tk
-import ttk
 from std_msgs.msg import String
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
@@ -37,9 +36,9 @@ class recordRecoveryDemonstration(AbstractAction):
             self.start = True
             window_s.destroy()
 
-        label = ttk.Label(window_s, text="Press start when you are ready to demonstrate")
+        label = tk.Label(window_s, text="Press start when you are ready to demonstrate")
         label.pack()
-        btn = ttk.Button(window_s, text="Start", command = start_cb)
+        btn = tk.Button(window_s, text="Start", command = start_cb, height = 1=, width = 20)
         btn.pack()
         window_s.mainloop()
 
