@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import GPy
+import time
 import rospy
 import random
 import pickle
@@ -17,6 +18,8 @@ current_scan_window = []
 current_scan_window_data = None
 model = None
 model_lock = threading.Lock()
+failure_confirmed = True
+last_failure_trace = None
 
 def receive_scan_history(data):
     global current_scan_window, current_scan_window_data
@@ -29,7 +32,7 @@ def save_new_trajectory(type="positive", trace_data=None):
     if trace_data is None:
         trace_data = current_scan_window_data
 
-    folder = '%s/catkin_ws/data/detect_trajectories'  % os.path.expanduser("~")
+    folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
     if type == "negative":
         filename = '%s/neg_%s.traj' % (folder, rospy.Time.now().to_nsec())
     elif type == "positive":
@@ -46,7 +49,7 @@ def  failure_confirmation(data):
 def load_model(_):
     global model, model_lock
 
-    folder = '%s/workspaces/museum_ws/data/GPmodels'  % os.path.expanduser("~")
+    folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
     ## Train the model with the new trajectory
     X = []
     negX = []
@@ -89,6 +92,7 @@ def load_model(_):
 
 
 if __name__ == "__main__":
+    time.sleep(4)
     #global current_scan_window
     #global model
 
@@ -155,12 +159,12 @@ if __name__ == "__main__":
             except:
                 rospy.logwarn("Errore while predicting")
             else:
+		print Yp
                 if Yp[0][0] != prev_Yp and Yp > 0.75:
                     prev_Yp = Yp[0][0]
 
                     msg = ActionFailure()
                     msg.stamp = rospy.Time.now()
-                    msg.trace = current_scan_window_data
                     msg.cause = "autodetected"
                     signal_pub.publish(msg)
                     trace_pub.publish(current_scan_window_data)
