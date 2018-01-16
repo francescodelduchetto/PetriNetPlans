@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   geometry_msgs
   message_generation
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -77,6 +78,7 @@ find_package(catkin REQUIRED COMPONENTS
  generate_messages(
    DEPENDENCIES
    actionlib_msgs
+   std_msgs
 )
 
 ###################################
@@ -91,7 +93,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES pnp_msgs
-  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs message_runtime
+  CATKIN_DEPENDS actionlib actionlib_msgs geometry_msgs std_msgs message_runtime
 #  DEPENDS system_lib
 )
 

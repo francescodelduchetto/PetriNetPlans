@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import GPy
+import time
 import rospy
 import random
 import pickle
@@ -51,7 +52,7 @@ def  failure_confirmation(data):
 def load_model(_):
     global model, model_lock
 
-    folder = '%s/workspaces/museum_ws/data/GPmodels'  % os.path.expanduser("~")
+    folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
     ## Train the model with the new trajectory
     X = []
     negX = []
@@ -94,6 +95,7 @@ def load_model(_):
 
 
 if __name__ == "__main__":
+    time.sleep(4)
     #global current_scan_window
     #global model
 
@@ -146,7 +148,7 @@ if __name__ == "__main__":
         if model is None:
             pass
             #rospy.loginfo('%s/detector_model.gp' % folder + " not found")
-        elif len(current_scan_window) > 0 and failure_confirmed:
+        elif len(current_scan_window) > 0: # and failure_confirmed:
             failure = False
 
             ## Make prediction
@@ -160,6 +162,7 @@ if __name__ == "__main__":
             except:
                 rospy.logwarn("Errore while predicting")
             else:
+		print Yp
                 if Yp[0][0] != prev_Yp and Yp > 0.75:
                     prev_Yp = Yp[0][0]
 
