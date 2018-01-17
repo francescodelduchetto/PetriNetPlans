@@ -9,7 +9,6 @@ import pickle
 import threading
 import numpy as np
 import Tkinter as tk
-import ttk
 
 from std_msgs.msg import Float64MultiArray, String
 from pnp_msgs.msg import ActionFailure
@@ -130,9 +129,9 @@ if __name__ == "__main__":
         # update the model
         load_model("")
 
-    label = ttk.Label(window, text="Failure signaller")
+    label = tk.Label(window, text="Failure signaller")
     label.pack()
-    by = ttk.Button(window, text="Signal", command = human_signal_failure)
+    by = tk.Button(window, text="Signal", command = human_signal_failure, height = 10, width = 20)
     by.pack()
 
 
