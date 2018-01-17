@@ -112,7 +112,7 @@ class recoverAction(AbstractAction):
 
         if len(params) > 1:
             elapsed_time = rospy.Time.now().to_sec() - params[-2]
-            if params[-1] == "recovering" and elapsed_time > 3:
+            if params[-1] == "recovering" and elapsed_time > 6:
                 return True
 
         return False

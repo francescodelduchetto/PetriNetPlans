@@ -38,7 +38,7 @@ class recordRecoveryDemonstration(AbstractAction):
 
         label = tk.Label(window_s, text="Press start when you are ready to demonstrate")
         label.pack()
-        btn = tk.Button(window_s, text="Start", command = start_cb, height = 1=, width = 20)
+        btn = tk.Button(window_s, text="Start", command = start_cb, height = 10, width = 20)
         btn.pack()
         window_s.mainloop()
 
@@ -78,7 +78,7 @@ class recordRecoveryDemonstration(AbstractAction):
 
         if len(params) > 1:
             elapsed_time = rospy.Time.now().to_sec() - params[-2]
-            if params[-1] == "recording" and elapsed_time > 3:
+            if params[-1] == "recording" and elapsed_time > 6:
                 return True
 
         return False
