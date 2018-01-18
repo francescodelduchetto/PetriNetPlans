@@ -8,7 +8,7 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import MultiArrayLayout, MultiArrayDimension, Float64MultiArray
 
 QUEUE_SIZE = 20
-NUM_LASER_POINTS = 30
+NUM_LASER_POINTS = 60
 
 scan_queue = [[0.] * NUM_LASER_POINTS] * QUEUE_SIZE
 

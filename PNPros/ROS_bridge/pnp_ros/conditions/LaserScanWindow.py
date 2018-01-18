@@ -1,5 +1,5 @@
 from AbstractTopicCondition import AbstractTopicCondition
-import std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray
 
 class LaserScanWindow(AbstractTopicCondition):
 
@@ -9,7 +9,7 @@ class LaserScanWindow(AbstractTopicCondition):
 
     def _get_value_from_data(self, data):
 
-        print len(data.data)
+#        print len(data.data)
 
         return str(data.data)
 
