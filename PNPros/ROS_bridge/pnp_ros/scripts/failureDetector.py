@@ -158,7 +158,7 @@ if __name__ == "__main__":
             except:
                 rospy.logwarn("Errore while predicting")
             else:
-		print Yp
+#		print Yp
                 if Yp[0][0] != prev_Yp and Yp > 0.75:
                     prev_Yp = Yp[0][0]
 

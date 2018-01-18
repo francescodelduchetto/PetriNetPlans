@@ -9,8 +9,12 @@ class LaserScan(AbstractTopicCondition):
 
     def _get_value_from_data(self, data):
 
+<<<<<<< HEAD
+	#print len(data.ranges)
+=======
         print len(data.ranges)
 
+>>>>>>> 76ce5e800993f965906e69bce6a72a447eef0239
         return str(data.ranges)
 
     def evaluate(self, params):
