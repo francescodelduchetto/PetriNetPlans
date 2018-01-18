@@ -51,7 +51,7 @@ class recordRecoveryDemonstration(AbstractAction):
             while not self._robot_moved:
                 rate.sleep()
 
-            response = starting_sp(str(self.goal_id), filepath, ["LaserScan"], ["Twist"], False).succeeded
+            response = starting_sp(str(self.goal_id), filepath, ["LaserScanWindow"], ["Twist"], False).succeeded
 
             # starting time action
             if response:
