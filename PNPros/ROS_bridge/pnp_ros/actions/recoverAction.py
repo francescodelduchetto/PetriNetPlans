@@ -1,13 +1,14 @@
 import os
 import rospy
 import Tkinter as tk
+import ttk
 
 from std_srvs.srv import Empty
 from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID
 from pnp_msgs.msg import ActionFailure
 from AbstractAction import AbstractAction
-from std_msgs.msg import Float64MultiArray
+from str_msgs.msg import Float64MultiArray
 
 class recoverAction(AbstractAction):
 
@@ -47,11 +48,11 @@ class recoverAction(AbstractAction):
         def confirm_d():
             window.destroy()
 
-        label = tk.Label(window, text="Was it actually a dangerous situation?")
+        label = ttk.Label(window, text="Was it actually a dangerous situation?")
         label.pack()
-        by = tk.Button(window, text="Yes", command = confirm_y,  height = 10, width = 20)
-        bn = tk.Button(window, text="No", command = confirm_n, height = 10, width = 20)
-        bd = tk.Button(window, text="Dunno", command = confirm_d, height = 10, width = 20)
+        by = ttk.Button(window, text="Yes", command = confirm_y)
+        bn = ttk.Button(window, text="No", command = confirm_n)
+        bd = ttk.Button(window, text="Dunno", command = confirm_d)
         by.pack()
         bn.pack()
         bd.pack()
@@ -112,7 +113,7 @@ class recoverAction(AbstractAction):
 
         if len(params) > 1:
             elapsed_time = rospy.Time.now().to_sec() - params[-2]
-            if params[-1] == "recovering" and elapsed_time > 3:
+            if params[-1] == "recovering" and elapsed_time > 6:
                 return True
 
         return False
