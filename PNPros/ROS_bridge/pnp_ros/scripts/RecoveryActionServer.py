@@ -6,7 +6,7 @@ import numpy as np
 from std_srvs.srv import Empty
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Float64MultiArray
 
 
 class RecoveryActionServer():
@@ -25,8 +25,7 @@ class RecoveryActionServer():
                 Empty, self._stop_recovery_execution)
 
         # scan history Subscriber
-        rospy.Subscriber("scan", LaserScan,
-                self._execution_callback)
+        rospy.Subscriber("scan_history", Float64MultiArray, self._execution_callback)
 
         # signal that a new demonstration arrived
         rospy.Subscriber("new_recovery_demonstration", String, self._update_model)
@@ -35,24 +34,24 @@ class RecoveryActionServer():
         self._cmdVelPub = rospy.Publisher('/cmd_vel', Twist, latch=True, queue_size=1)
 
     def _start_recovery_execution(self, _):
-        #predict whole trajectory
-        self.index = 0
-        if self._model is not None:
-            current_scan_window = self.last_scan
-            Xtest = np.array(current_scan_window)
-            Xtest.shape = (1, len(current_scan_window))
+#        ##predict whole trajectory
+#        self.index = 0
+#        if self._model is not None:
+#            current_scan_window = self.last_scan
+#            Xtest = np.array(current_scan_window)
+#            Xtest.shape = (1, len(current_scan_window))
 
-            self._model_lock.acquire()
-            (Yp, var) = self._model.predict(Xtest)
-            self._model_lock.release()
-            self.trajectory = Yp
+#            self._model_lock.acquire()
+#            (Yp, var) = self._model.predict(Xtest)
+#            self._model_lock.release()
+#            self.trajectory = Yp
 
 
         ######
         ##if msg:
-        #rospy.loginfo("Starting recovery execution")
-        #self._running = True
-        #return {}
+        rospy.loginfo("Starting recovery execution")
+        self._running = True
+        return {}
 
     def _stop_recovery_execution(self, _):
         #if msg:
@@ -68,26 +67,29 @@ class RecoveryActionServer():
         for filename in os.listdir(folder):
             filepath = folder + "/" + filename
             if filename.endswith(".txt"):
-                x = []
-                y = []
                 for i, line in enumerate(open(filepath, "r")):
+                    y = []
+                    x = []
+
                     state_conds = line.split("\t")[0].split("  ")
                     for state_cond in state_conds:
                         # convert to list
-                        if i == 0:
-                            x += list(eval(state_cond.split("_")[1]))
+#                        if i == 0:
+#			print state_cond.split("_")[0]
+                        x += list(eval(state_cond.split("_")[1]))
                     action_conds = line.split("\t")[1].split("  ")
                     for action_cond in action_conds:
                         # convert to list
+#			print action_cond.split("_")[0]
                         y += list(eval(action_cond.split("_")[1]))
-                Xtrain.append(x)
-                Ytrain.append(y)
+                    Xtrain.append(x)
+                    Ytrain.append(y)
 
 
-        min_row = min([len(y) for y in Ytrain])
-        print "min:", min_row
-        Ytrain = [r[:min_row] for r in Ytrain]
-        print "shape: ", np.array(Ytrain).shape 
+#        min_row = min([len(y) for y in Ytrain])
+#        print "min:", min_row
+#        Ytrain = [r[:min_row] for r in Ytrain]
+#        print "shape: ", np.array(Ytrain).shape 
         if len(Xtrain) > 0:
             multiLS = False
             LS = 400. #was 120.
@@ -110,38 +112,39 @@ class RecoveryActionServer():
 
 
     def _execution_callback(self, msg):
-        self.last_scan = msg.ranges
+#        self.last_scan = msg.ranges
 
-        if self._running:
-            if self._model is not None:
-                if self.index < len(self.trajectory) / 2:
-                    Yp = [self.trajectory[0][self.index], self.trajectory[0][self.index+1]]
-                    self.index += 2
-                else:
-                    Yp = [[0.0.]]
-                ## send predicted cmd_vel
-                cmdVel = Twist()
-                cmdVel.linear.x = Yp[0]
-                cmdVel.angular.z = Yp[1]
-                self._cmdVelPub.publish(cmdVel)
-                print "predicted", Yp, "with variance", var
+#        if self._running:
+#            if self._model is not None:
+#                if self.index < len(self.trajectory) / 2:
+#                    Yp = [self.trajectory[0][self.index], self.trajectory[0][self.index+1]]
+#                    self.index += 2
+#                else:
+#                    Yp = [[0.0.]]
+#                ## send predicted cmd_vel
+#                cmdVel = Twist()
+#                cmdVel.linear.x = Yp[0]
+#                cmdVel.angular.z = Yp[1]
+#                self._cmdVelPub.publish(cmdVel)
+#                print "predicted", Yp, "with variance", var
 
         #######
-        #if self._running:
-        #    if self._model is not None:
-        #        current_scan_window = msg.ranges
-        #        Xtest = np.array(current_scan_window)
-        #        Xtest.shape = (1, len(current_scan_window))
-
-        #        self._model_lock.acquire()
-        #        (Yp, var) = self._model.predict(Xtest)
-        #        self._model_lock.release()
-
-        #        ## send predicted cmd_vel
-        #        cmdVel = Twist()
-        #        cmdVel.linear.x = Yp[0][0]
-        #        cmdVel.angular.z = Yp[0][1]
-        #        self._cmdVelPub.publish(cmdVel)
-        #        print "predicted", Yp, "with variance", var
-        #    else:
-        #        rospy.logwarn("The recovery model has not been generated")
+        if self._running:
+            if self._model is not None:
+                current_scan_window = msg.data
+                Xtest = np.array(current_scan_window)
+                Xtest.shape = (1, len(current_scan_window))
+		print "predicting"
+                self._model_lock.acquire()
+                (Yp, var) = self._model.predict(Xtest)
+                self._model_lock.release()
+		print "predicted"
+                ## send predicted cmd_vel
+                cmdVel = Twist()
+                cmdVel.linear.x = Yp[0][0]
+                cmdVel.angular.z = Yp[0][1]
+                self._cmdVelPub.publish(cmdVel)
+		print "Xtest shape", Xtest.shape
+                print "predicted", Yp, "with variance", var
+            else:
+                rospy.logwarn("The recovery model has not been generated")
