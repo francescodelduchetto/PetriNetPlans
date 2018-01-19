@@ -7,12 +7,23 @@ import numpy as np
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import MultiArrayLayout, MultiArrayDimension, Float64MultiArray
 
-QUEUE_SIZE = 20
-NUM_LASER_POINTS = 60
+QUEUE_SIZE = 25
+NUM_LASER_POINTS = 15
 
+n = 0
+time = 0
 scan_queue = [[0.] * NUM_LASER_POINTS] * QUEUE_SIZE
 
 def receive_scan(data):
+    global n, time
+#    if n==0:
+#        time = rospy.Time.now().to_sec()
+#    elif n==QUEUE_SIZE:
+#        now = rospy.Time.now().to_sec()
+#        print "Elapsed time ", str(now - time)
+#        time = now
+#        n =  -1
+#    n += 1
     scan_queue.pop(0)
     all_scan = list(data.ranges)
     num_ranges = len(data.ranges)

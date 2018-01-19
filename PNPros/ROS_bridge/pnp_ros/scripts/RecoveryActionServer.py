@@ -6,7 +6,7 @@ import numpy as np
 from std_srvs.srv import Empty
 from std_msgs.msg import String
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Float64MultiArray
 
 
 class RecoveryActionServer():
@@ -25,8 +25,7 @@ class RecoveryActionServer():
                 Empty, self._stop_recovery_execution)
 
         # scan history Subscriber
-        rospy.Subscriber("scan", LaserScan,
-                self._execution_callback)
+        rospy.Subscriber("scan_history", Float64MultiArray, self._execution_callback)
 
         # signal that a new demonstration arrived
         rospy.Subscriber("new_recovery_demonstration", String, self._update_model)
@@ -76,10 +75,12 @@ class RecoveryActionServer():
                     for state_cond in state_conds:
                         # convert to list
 #                        if i == 0:
+#			print state_cond.split("_")[0]
                         x += list(eval(state_cond.split("_")[1]))
                     action_conds = line.split("\t")[1].split("  ")
                     for action_cond in action_conds:
                         # convert to list
+#			print action_cond.split("_")[0]
                         y += list(eval(action_cond.split("_")[1]))
                     Xtrain.append(x)
                     Ytrain.append(y)
@@ -130,19 +131,20 @@ class RecoveryActionServer():
         #######
         if self._running:
             if self._model is not None:
-                current_scan_window = msg.ranges
+                current_scan_window = msg.data
                 Xtest = np.array(current_scan_window)
                 Xtest.shape = (1, len(current_scan_window))
-
+		print "predicting"
                 self._model_lock.acquire()
                 (Yp, var) = self._model.predict(Xtest)
                 self._model_lock.release()
-
+		print "predicted"
                 ## send predicted cmd_vel
                 cmdVel = Twist()
                 cmdVel.linear.x = Yp[0][0]
                 cmdVel.angular.z = Yp[0][1]
                 self._cmdVelPub.publish(cmdVel)
+		print "Xtest shape", Xtest.shape
                 print "predicted", Yp, "with variance", var
             else:
                 rospy.logwarn("The recovery model has not been generated")
