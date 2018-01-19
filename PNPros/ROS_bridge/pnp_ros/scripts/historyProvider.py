@@ -8,7 +8,7 @@ from sensor_msgs.msg import LaserScan
 from std_msgs.msg import MultiArrayLayout, MultiArrayDimension, Float64MultiArray
 
 QUEUE_SIZE = 20
-NUM_LASER_POINTS = 30
+NUM_LASER_POINTS = 30.
 
 scan_queue = [[0.] * NUM_LASER_POINTS] * QUEUE_SIZE
 
@@ -16,7 +16,12 @@ def receive_scan(data):
     scan_queue.pop(0)
     all_scan = list(data.ranges)
     num_ranges = len(data.ranges)
-    reduced_scan = all_scan[1:num_ranges:int(np.floor(num_ranges/NUM_LASER_POINTS))]
+    step = int(np.floor(num_ranges/NUM_LASER_POINTS))
+    reduced_scan = []
+    for i in range(0, num_ranges, step):
+        reduced_scan.append(min(all_scan[i:i+step]))
+    reduced_scan = reduced_scan[:NUM_LASER_POINTS]
+    #reduced_scan = all_scan[1:num_ranges:int(np.floor(num_ranges/NUM_LASER_POINTS))]
     scan_queue.append(reduced_scan)
 
 if __name__ == "__main__":
