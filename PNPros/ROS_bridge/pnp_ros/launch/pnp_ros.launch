@@ -19,6 +19,14 @@
     respawn="false" output="screen">
     <!-- <param name="name" value="value" /> -->
   </node>
+
+  <node
+    name="360LaserScan"
+    pkg="pnp_ros"
+    type="360LaserScan"
+    respawn="false"
+    output="screen">
+  </node>
 	
   <node
     name="history_provider"

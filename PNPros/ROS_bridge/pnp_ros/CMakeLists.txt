@@ -164,6 +164,7 @@ install(PROGRAMS
   scripts/PNPActionServer.py
   scripts/historyProvider.py
   scripts/failureDetector.py
+  scripts/360LaserScan/360LaserScan.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

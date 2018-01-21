@@ -1,0 +1,4 @@
+[submodule "PNPros/ROS_bridge/pnp_ros/scripts/360LaserScan"]
+	path = PNPros/ROS_bridge/pnp_ros/scripts/360LaserScan
+	url = git@github.com:francescodelduchetto/360LaserScan.git
+	branch = master
