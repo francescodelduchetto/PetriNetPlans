@@ -21,9 +21,9 @@
   </node>
 
   <node
-    name="360LaserScan"
+    name="LaserScan360Provider"
     pkg="pnp_ros"
-    type="360LaserScan"
+    type="360LaserScan.py"
     respawn="false"
     output="screen">
   </node>
