@@ -4,21 +4,18 @@
 import rospy
 import numpy as np
 
-from nav_msgs.msg import OccupancyGrid
-from map_msgs.msg import OccupancyGridUpdate
+from sensor_msgs.msg import LaserScan
 from std_msgs.msg import MultiArrayLayout, MultiArrayDimension, Float64MultiArray
 
 QUEUE_SIZE = 25
-GRID_WIDTH = 0
-GRID_HEIGHT = 0
-NUM_GRID_CELLS = 0
+NUM_LASER_POINTS = 15
 
 n = 0
 time = 0
-scan_queue = []
+scan_queue = [[0.] * NUM_LASER_POINTS] * QUEUE_SIZE
 
-def receive_update(data):
-    global n, time, scan_queue
+def receive_scan(data):
+    global n, time
 #    if n==0:
 #        time = rospy.Time.now().to_sec()
 #    elif n==QUEUE_SIZE:
@@ -28,24 +25,22 @@ def receive_update(data):
 #        n =  -1
 #    n += 1
     scan_queue.pop(0)
-    all_cells = np.array(scan_queue[-1])
-    all_cells = np.reshape(all_cells, (GRID_HEIGHT, GRID_WIDTH))
-    all_cells[data.y:, data.x:] = np.reshape(data.data, (GRID_HEIGHT - data.y, GRID_WIDTH - data.x))
-    scan_queue.append(all_cells.flatten().tolist())
+    all_scan = list(data.ranges)
+    num_ranges = len(data.ranges)
+    step = int(np.floor(float(num_ranges)/NUM_LASER_POINTS))
+    reduced_scan = []
+    for i in range(0, num_ranges, step):
+        reduced_scan.append(min(all_scan[i:i+step]))
+    reduced_scan = reduced_scan[:NUM_LASER_POINTS]
+    #reduced_scan = all_scan[1:num_ranges:int(np.floor(num_ranges/NUM_LASER_POINTS))]
+    scan_queue.append(reduced_scan)
 
 if __name__ == "__main__":
     # init node
     rospy.init_node("history_provider")
 
-    # get the first latch message of the costmap to get the initial map info
-    msg = rospy.wait_for_message("/move_base/local_costmap/costmap", OccupancyGrid, timeout=5)
-    GRID_WIDTH = msg.info.width
-    GRID_HEIGHT = msg.info.height
-    NUM_GRID_CELLS = msg.info.width * msg.info.height
-    scan_queue = [msg.data] * QUEUE_SIZE
-
-    # get costmap updates with listener
-    rospy.Subscriber("/move_base/local_costmap/costmap_updates", OccupancyGridUpdate, receive_update)
+    # laserScan listener
+    rospy.Subscriber("360scan", LaserScan, receive_scan)
 
     # history Publisher
     pub = rospy.Publisher("scan_history", Float64MultiArray, queue_size=10)
@@ -54,11 +49,11 @@ if __name__ == "__main__":
     dim1 = MultiArrayDimension()
     dim1.label = "samples"
     dim1.size = QUEUE_SIZE
-    dim1.stride = QUEUE_SIZE * NUM_GRID_CELLS
+    dim1.stride = QUEUE_SIZE * NUM_LASER_POINTS
     dim2 = MultiArrayDimension()
     dim2.label = "laser_points"
-    dim2.size = NUM_GRID_CELLS
-    dim2.stride = NUM_GRID_CELLS
+    dim2.size = NUM_LASER_POINTS
+    dim2.stride = NUM_LASER_POINTS
 
     dimentions = [dim1, dim2]
 
