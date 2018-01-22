@@ -1,18 +1,18 @@
 from AbstractTopicCondition import AbstractTopicCondition
-from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Twist
 
 from ast import literal_eval as make_tuple
 
 class Twist(AbstractTopicCondition):
 
-    _topic_name = "/odom"
+    _topic_name = "/cmd_vel"
 
-    _topic_type = Odometry
+    _topic_type = Twist
 
     def _get_value_from_data(self, data):
         return str((
-                data.twist.twist.linear.x,
-                data.twist.twist.angular.z
+                data.linear.x,
+                data.angular.z
             ))
 
     def evaluate(self, params):
