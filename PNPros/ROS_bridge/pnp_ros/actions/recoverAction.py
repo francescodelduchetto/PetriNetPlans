@@ -30,8 +30,11 @@ class recoverAction(AbstractAction):
         conf_pub = rospy.Publisher("failure_signal_confirmation", ActionFailure, latch=True, queue_size=10)
 
         # read the failure trace_data
-        failure_trace = rospy.wait_for_message("failure_trace", Float64MultiArray, timeout=1)
-
+	try:
+	        failure_trace = rospy.wait_for_message("failure_trace", Float64MultiArray, timeout=5)
+	except Exception as e:
+		rospy.logwarn("failure trace not received, stopping recovery")
+		self.params[len(self.params):] = ["done"]
 
         window = tk.Tk()
         self.confirmed = None

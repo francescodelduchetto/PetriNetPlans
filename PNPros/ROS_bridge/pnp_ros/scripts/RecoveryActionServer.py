@@ -95,12 +95,19 @@ class RecoveryActionServer():
             LS = 400. #was 120.
             F_DIM = len(Xtrain[0])
 
-            kernelExpo = GPy.kern.Exponential(input_dim=F_DIM,
-                                              lengthscale=LS,
+	    # normalize dataset
+	    Xtrain = np.array(Xtrain)
+            Ytrain = np.array(Ytrain)
+	    print "XTRAIN SHAPE", Xtrain.shape
+	    self.meanX = Xtrain.mean()
+   	    self.stdX = Xtrain.std()
+	    Xtrain -= self.meanX
+	    Xtrain /= self.stdX
+
+            kernelExpo = GPy.kern.RatQuad(input_dim=F_DIM,
+                                              power=LS,
                                               ARD=multiLS) # tails are not long enough
             kernel = kernelExpo # + GPy.kern.White(F_DIM)
-            Xtrain = np.array(Xtrain)
-            Ytrain = np.array(Ytrain)
             self._model_lock.acquire()
             self._model = GPy.models.GPRegression(Xtrain, Ytrain, kernel)
             self._model.optimize(max_f_eval = 1000)
@@ -134,6 +141,8 @@ class RecoveryActionServer():
                 current_scan_window = msg.data
                 Xtest = np.array(current_scan_window)
                 Xtest.shape = (1, len(current_scan_window))
+		Xtest -= self.meanX
+		Xtest /= self.stdX
 		print "predicting"
                 self._model_lock.acquire()
                 (Yp, var) = self._model.predict(Xtest)
@@ -143,6 +152,11 @@ class RecoveryActionServer():
                 cmdVel = Twist()
                 cmdVel.linear.x = Yp[0][0]
                 cmdVel.angular.z = Yp[0][1]
+		if var > 0.01:
+			print "HIGH VARIANCE: ", var, "(std:", self.stdX,")"
+			print ">>>>>> STOPPED BECAUSE I DON'T KNOW WHAT TO DO <<<<<<"
+			self._running = False
+			return {}
                 self._cmdVelPub.publish(cmdVel)
 		print "Xtest shape", Xtest.shape
                 print "predicted", Yp, "with variance", var

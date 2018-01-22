@@ -13,12 +13,16 @@ import Tkinter as tk
 from std_msgs.msg import Float64MultiArray, String
 from pnp_msgs.msg import ActionFailure
 
+POSITIVE_THRESHOLD = 0.78
+
 current_scan_window = []
 current_scan_window_data = None
 model = None
 model_lock = threading.Lock()
 failure_confirmed = True
 last_failure_trace = None
+meanX = None
+stdX = None
 
 def receive_scan_history(data):
     global current_scan_window, current_scan_window_data
@@ -46,23 +50,31 @@ def  failure_confirmation(data):
         load_model("")
 
 def load_model(_):
-    global model, model_lock
+    global model, model_lock, meanX, stdX
 
     folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
     ## Train the model with the new trajectory
     X = []
-    negX = []
+    Y = []
     for filename in os.listdir(folder):
         filepath = folder + "/" + filename
         if filename.endswith(".traj"):
             if filename.startswith("neg"):
-                negX.append(pickle.load(open(filepath, "rb")))
+		e = list(pickle.load(open(filepath, "rb")))
+                Y.append(0)
             else:
-                X.append(pickle.load(open(filepath, "rb")))
-    Y = [1] * len(X) + [0] * len(negX); Y = np.array(Y); Y.shape = (len(Y), 1)
-    X += negX; X = np.array(X)
+		e = list(pickle.load(open(filepath, "rb")))
+		Y.append(1)
+            X.append(e)
+    Y = np.array(Y); Y.shape = (len(Y), 1)
+    X = np.array(X)
     print "INPUT DATA SIZE: ", X.shape
     print "OUTPUT DATA SIZE: ", Y.shape
+
+    meanX = X.mean()
+    stdX = X.std()
+    X -= meanX
+    X /= stdX
 
     # acquire permission to modify the model
     model_lock.acquire()
@@ -149,17 +161,19 @@ if __name__ == "__main__":
 
             ## Make prediction
             Xtest = np.array(current_scan_window); Xtest.shape = (1, len(current_scan_window))
-
+	    Xtest -= meanX
+	    Xtest /= stdX
             try:
                 # acquire the lock on the model
                 model_lock.acquire()
                 (Yp, var) = model.predict(Xtest)
                 model_lock.release()
-            except:
+            except Exception as e:
                 rospy.logwarn("Errore while predicting")
+		print e
             else:
 #		print Yp
-                if Yp[0][0] != prev_Yp and Yp > 0.75:
+                if Yp[0][0] != prev_Yp and Yp > POSITIVE_THRESHOLD:
                     prev_Yp = Yp[0][0]
 
                     msg = ActionFailure()
@@ -167,7 +181,7 @@ if __name__ == "__main__":
                     msg.cause = "autodetected"
                     signal_pub.publish(msg)
                     trace_pub.publish(current_scan_window_data)
-                    print " Sent failure_signal"
+                    print " Sent failure_signal", Yp[0][0]
 
                     # wait in order to not send too many failure signals
                     time.sleep(2)

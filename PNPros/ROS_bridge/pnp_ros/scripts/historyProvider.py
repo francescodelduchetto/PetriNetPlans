@@ -7,8 +7,8 @@ import numpy as np
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import MultiArrayLayout, MultiArrayDimension, Float64MultiArray
 
-QUEUE_SIZE = 5
-NUM_LASER_POINTS = 50
+QUEUE_SIZE = 20
+NUM_LASER_POINTS = 30
 
 n = 0
 time = 0
