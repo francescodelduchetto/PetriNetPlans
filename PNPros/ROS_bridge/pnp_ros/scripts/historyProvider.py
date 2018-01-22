@@ -7,15 +7,15 @@ import numpy as np
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import MultiArrayLayout, MultiArrayDimension, Float64MultiArray
 
-QUEUE_SIZE = 25
-NUM_LASER_POINTS = 15
+QUEUE_SIZE = 5
+NUM_LASER_POINTS = 50
 
 n = 0
 time = 0
 scan_queue = [[0.] * NUM_LASER_POINTS] * QUEUE_SIZE
 
 def receive_scan(data):
-    global n, time
+#    global n, time
 #    if n==0:
 #        time = rospy.Time.now().to_sec()
 #    elif n==QUEUE_SIZE:
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     rospy.init_node("history_provider")
 
     # laserScan listener
-    rospy.Subscriber("360scan", LaserScan, receive_scan)
+    rospy.Subscriber("scan360", LaserScan, receive_scan)
 
     # history Publisher
     pub = rospy.Publisher("scan_history", Float64MultiArray, queue_size=10)
