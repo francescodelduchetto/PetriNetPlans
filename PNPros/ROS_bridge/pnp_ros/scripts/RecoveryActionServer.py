@@ -97,25 +97,25 @@ class RecoveryActionServer():
 
 	    # normalize dataset
 	    Xtrain = np.array(Xtrain)
-        Ytrain = np.array(Ytrain)
+	    Ytrain = np.array(Ytrain)
 	    print "XTRAIN SHAPE", Xtrain.shape
 	    self.meanX = Xtrain.mean()
    	    self.stdX = Xtrain.std()
 	    Xtrain -= self.meanX
 	    Xtrain /= self.stdX
 
-        kernelExpo = GPy.kern.RatQuad(input_dim=F_DIM,
+            kernelExpo = GPy.kern.RatQuad(input_dim=F_DIM,
                                           power=LS,
                                           ARD=multiLS) # tails are not long enough
-        kernel = kernelExpo # + GPy.kern.White(F_DIM)
-        self._model_lock.acquire()
-        self._model = GPy.models.GPRegression(Xtrain, Ytrain, kernel)
-        self._model.optimize(max_f_eval = 1000)
-        self._model_lock.release()
+            kernel = kernelExpo # + GPy.kern.White(F_DIM)
+            self._model_lock.acquire()
+            self._model = GPy.models.GPRegression(Xtrain, Ytrain, kernel)
+            self._model.optimize(max_f_eval = 1000)
+            self._model_lock.release()
 
-        print "RecoveryActionServer"
-        print "X.shape", Xtrain.shape, "Y.shape", Ytrain.shape
-        print self._model
+            print "RecoveryActionServer"
+            print "X.shape", Xtrain.shape, "Y.shape", Ytrain.shape
+            print self._model
 
 
     def _execution_callback(self, msg):
@@ -141,9 +141,9 @@ class RecoveryActionServer():
                 current_scan_window = msg.data
                 Xtest = np.array(current_scan_window)
                 Xtest.shape = (1, len(current_scan_window))
-                Xtest -= self.
+                Xtest -= self.meanX
                 Xtest /= self.stdX
-		        print "predicting"
+		print "predicting"
                 self._model_lock.acquire()
                 (Yp, var) = self._model.predict(Xtest)
                 self._model_lock.release()
@@ -153,11 +153,11 @@ class RecoveryActionServer():
                 cmdVel.linear.x = Yp[0][0]
                 cmdVel.angular.z = Yp[0][1]
 
-                if var > 0.01:
-        			print "HIGH VARIANCE: ", var, "(std:", self.stdX,")"
-        			print ">>>>>> STOPPED BECAUSE I DON'T KNOW WHAT TO DO <<<<<<"
-        			self._running = False
-                    return {}
+                if var > 0.5:
+        		print "HIGH VARIANCE: ", var, "(std:", self.stdX,")"
+        		print ">>>>>> STOPPED BECAUSE I DON'T KNOW WHAT TO DO <<<<<<"
+			self._running = False
+			return {}
 
                 self._cmdVelPub.publish(cmdVel)
                 print "Xtest shape", Xtest.shape
