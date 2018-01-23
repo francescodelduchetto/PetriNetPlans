@@ -2,7 +2,6 @@ import os
 import rospy
 import Tkinter as tk
 from std_msgs.msg import String
-from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID
 from AbstractAction import AbstractAction
@@ -45,7 +44,7 @@ class recordRecoveryDemonstration(AbstractAction):
         if self.start:
 
             # wait until the user moves the robot
-            rospy.Subscriber("odom", Odometry, self._twist_callback)
+            rospy.Subscriber("cmd_vel", Twist, self._twist_callback)
             self._robot_moved = False
             rate = rospy.Rate(20)
             while not self._robot_moved:
@@ -84,6 +83,6 @@ class recordRecoveryDemonstration(AbstractAction):
         return False
 
     def _twist_callback(self, msg):
-        if abs(msg.twist.twist.linear.x) > 0.001\
-                or abs(msg.twist.twist.angular.z) > 0.001:
+        if abs(msg.linear.x) > 0.001\
+                or abs(msg.angular.z) > 0.001:
             self._robot_moved = True

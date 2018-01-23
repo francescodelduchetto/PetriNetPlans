@@ -168,6 +168,9 @@ class StateActionPairGenerator(ConditionListener):
                     if len(self._states_history[goal_id]) == 0 or condition_name in [cond.split("_")[0] for cond in self._states_history[goal_id][-1]]:
                         # Save the condition
                         self._states_history[goal_id].append([condition_name + "_".join(["", condition_value])])
+
+                        # Add empty container of actions for the current step
+                        self._actions_history[goal_id].append([])
                     else:
                         # Save the condition
                         self._states_history[goal_id][-1].append(condition_name + "_".join(["", condition_value]))
@@ -203,8 +206,7 @@ class StateActionPairGenerator(ConditionListener):
                     else:
                         break
 
-                # Add empty container of actions for the current step
-                self._actions_history[goal_id].append([])
+
 
         # Save in the bag
         topic_message = condition_instance.get_data() # the actual topic message
