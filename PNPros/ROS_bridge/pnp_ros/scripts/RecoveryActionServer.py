@@ -104,8 +104,8 @@ class RecoveryActionServer():
 	    Xtrain -= self.meanX
 	    Xtrain /= self.stdX
 
-            kernelExpo = GPy.kern.RatQuad(input_dim=F_DIM,
-                                          power=LS,
+            kernelExpo = GPy.kern.Exponential(input_dim=F_DIM,
+                                          lengthscale=LS,
                                           ARD=multiLS) # tails are not long enough
             kernel = kernelExpo # + GPy.kern.White(F_DIM)
             self._model_lock.acquire()
@@ -153,7 +153,7 @@ class RecoveryActionServer():
                 cmdVel.linear.x = Yp[0][0]
                 cmdVel.angular.z = Yp[0][1]
 
-                if var > 0.5:
+                if var > 0.03:
         		print "HIGH VARIANCE: ", var, "(std:", self.stdX,")"
         		print ">>>>>> STOPPED BECAUSE I DON'T KNOW WHAT TO DO <<<<<<"
 			self._running = False

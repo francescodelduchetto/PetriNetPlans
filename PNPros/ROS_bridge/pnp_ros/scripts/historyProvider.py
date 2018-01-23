@@ -3,6 +3,7 @@
 
 import rospy
 import numpy as np
+import threading
 
 from sensor_msgs.msg import LaserScan
 from std_msgs.msg import MultiArrayLayout, MultiArrayDimension, Float64MultiArray
@@ -13,6 +14,7 @@ NUM_LASER_POINTS = 30
 n = 0
 time = 0
 scan_queue = [[0.] * NUM_LASER_POINTS] * QUEUE_SIZE
+queue_lock = None
 
 def receive_scan(data):
 #    global n, time
@@ -24,7 +26,7 @@ def receive_scan(data):
 #        time = now
 #        n =  -1
 #    n += 1
-    scan_queue.pop(0)
+    global queue_lock, scan_queue
     all_scan = list(data.ranges)
     num_ranges = len(data.ranges)
     step = int(np.floor(float(num_ranges)/NUM_LASER_POINTS))
@@ -33,7 +35,10 @@ def receive_scan(data):
         reduced_scan.append(min(all_scan[i:i+step]))
     reduced_scan = reduced_scan[:NUM_LASER_POINTS]
     #reduced_scan = all_scan[1:num_ranges:int(np.floor(num_ranges/NUM_LASER_POINTS))]
+    queue_lock.acquire()
+    scan_queue.pop(0)
     scan_queue.append(reduced_scan)
+    queue_lock.release()
 
 if __name__ == "__main__":
     # init node
@@ -44,6 +49,8 @@ if __name__ == "__main__":
 
     # history Publisher
     pub = rospy.Publisher("scan_history", Float64MultiArray, queue_size=10)
+
+    queue_lock = threading.Lock()
 
     # specification of array dimentions
     dim1 = MultiArrayDimension()
@@ -67,8 +74,9 @@ if __name__ == "__main__":
         # create new array
         array = Float64MultiArray()
         array.layout = layout
+	queue_lock.acquire()
         array.data = [point for scan in scan_queue for point in scan]
-
+	queue_lock.release()
         pub.publish(array)
 
         rate.sleep()
