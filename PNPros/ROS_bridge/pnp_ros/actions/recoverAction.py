@@ -8,6 +8,7 @@ from actionlib_msgs.msg import GoalID
 from pnp_msgs.msg import ActionFailure
 from AbstractAction import AbstractAction
 from std_msgs.msg import Float64MultiArray
+from pnp_msgs.srv import PNPStartStateActionSaver, PNPStopStateActionSaver
 
 class recoverAction(AbstractAction):
 
@@ -72,6 +73,15 @@ class recoverAction(AbstractAction):
             msg.trace = failure_trace
             msg.cause = "positive"
             conf_pub.publish(msg)
+
+            # start registering the recovery
+            starting_sp = rospy.ServiceProxy("/start_state_action_saver", PNPStartStateActionSaver)
+            filename = goal_topo + str(rospy.Time.now().to_nsec())
+            self.goal_id = filename
+            folder = '%s/workspaces/museum_ws/data/passage_trajectories'  % os.path.expanduser("~")
+            filepath = '%s/%s.txt' % (folder, filename)
+            starting_sp(self.goal_id, filepath, ["Pose"], ["Twist"], True)
+
             # start recovery service
             start_sp = rospy.ServiceProxy("start_recovery_execution", Empty)
             start_sp()
@@ -107,6 +117,10 @@ class recoverAction(AbstractAction):
         if self.params[-1] == "recovering":
             stop_sp = rospy.ServiceProxy("stop_recovery_execution", Empty)
             stop_sp()
+
+            # stop registering
+            stopping_sp = rospy.ServiceProxy("stop_state_action_saver", PNPStopStateActionSaver)
+            stopping_sp(self.goal_id)
 
     @classmethod
     def is_goal_reached(cls, params):
