@@ -199,11 +199,14 @@ class StateActionPairGenerator(ConditionListener):
                 if condition_name in action_conds:
                     action_candidates.append(condition_name + "_".join(["", condition_value]))
 
-                # propagate the action to the previous timesteps without actions
+                # insert the action at the last state received, remove the previous timesteps without actions
                 executed_actions = action_candidates[:]
-                for timestep in range(len(self._actions_history[goal_id])-1, -1, -1):
+		if len(self._actions_history[goal_id]) > 0 and len(self._actions_history[goal_id][-1]) == 0:
+		    self._actions_history[goal_id][-1] = executed_actions
+                for timestep in range(len(self._actions_history[goal_id])-2, -1, -1):
                     if len(self._actions_history[goal_id][timestep]) == 0:
-                        self._actions_history[goal_id][timestep] = executed_actions
+                        del self._actions_history[goal_id][timestep]
+			del self._states_history[goal_id][timestep]
                     else:
                         break
 

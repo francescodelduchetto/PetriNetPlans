@@ -138,6 +138,7 @@ if __name__ == "__main__":
         msg.stamp = rospy.Time.now()
         msg.cause = "human"
         signal_pub.publish(msg)
+	time.sleep(5)
         # update the model
         load_model("")
 
