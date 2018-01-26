@@ -152,8 +152,8 @@ class RecoveryActionServer():
                 cmdVel = Twist()
                 cmdVel.linear.x = Yp[0][0]
                 cmdVel.angular.z = Yp[0][1]
-
-                if var > 0.03:
+		print "STD: ", self.stdX
+                if var > self.stdX ** 2:
         		print "HIGH VARIANCE: ", var, "(std:", self.stdX,")"
         		print ">>>>>> STOPPED BECAUSE I DON'T KNOW WHAT TO DO <<<<<<"
 			self._running = False
