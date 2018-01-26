@@ -3,3 +3,6 @@
 
 *if* FailureSituation_human 	    *during* goto *do* recordRecoveryDemonstration; restart_action
 *if* FailureSituation_autodetected  *during* goto *do* recoverAction; restart_action
+
+*if* FailureSituation_human 	    *during* gotoAndRegister *do* recordRecoveryDemonstration; restart_action
+*if* FailureSituation_autodetected  *during* gotoAndRegister *do* recoverAction; restart_action
