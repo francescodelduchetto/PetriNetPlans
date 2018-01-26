@@ -86,7 +86,7 @@ class recoverAction(AbstractAction):
                                                  "LaserScan",
                                                  "LaserScan360",
                                                  "LaserScanWindow",
-                                                 "LocalCostmap"
+                                                 "LocalCostmap",
                                                  "CurrentGoal"],
                                                  ["Twist"], True)
 

@@ -32,16 +32,7 @@ class recordRecoveryDemonstration(AbstractAction):
         filename = "demo_" + str(rospy.Time.now().to_nsec())
         self.goal_id_2 = filename
         folder = '%s/workspaces/museum_ws/data/passage_trajectories'  % os.path.expanduser("~")
-        filepath = '%s/%s.txt' % (folder, filename)
-        starting_sp(self.goal_id, filepath, ["Pose",
-                                             "CurrentNavigationGoal",
-                                             "InterruptedGoal",
-                                             "LaserScan",
-                                             "LaserScan360",
-                                             "LaserScanWindow",
-                                             "LocalCostmap"
-                                             "CurrentGoal"],
-                                             ["Twist"], True)
+        filepath_2 = '%s/%s.txt' % (folder, filename)
 
         ## create interface to starting demonstration
         window_s = tk.Tk()
@@ -69,6 +60,15 @@ class recordRecoveryDemonstration(AbstractAction):
 
             # starting time action
             if response:
+		starting_sp(self.goal_id_2, filepath_2, ["Pose",
+                                             "CurrentNavigationGoal",
+                                             "InterruptedGoal",
+                                             "LaserScan",
+                                             "LaserScan360",
+                                             "LaserScanWindow",
+                                             "LocalCostmap",
+                                             "CurrentGoal"],
+                                             ["Twist"], True) 
                 self.params[len(self.params):] = [rospy.Time.now().to_sec()]
                 self.params[len(self.params):] = ["recording"]
             else:

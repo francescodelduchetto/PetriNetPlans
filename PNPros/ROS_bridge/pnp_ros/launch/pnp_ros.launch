@@ -3,6 +3,22 @@
   <arg name="plan_folder" default="$(find pnp_ros)/plans" />
 
   <node
+    name="LaserScan360Provider"
+    pkg="pnp_ros"
+    type="360LaserScan.py"
+    respawn="false"
+    output="screen">
+  </node>
+
+  <node
+    name="history_provider"
+    pkg="pnp_ros"
+    type="historyProvider.py"
+    respawn="false"
+    output="screen">
+  </node>
+
+  <node
     name="pnp_ros"
     pkg="pnp_ros" type="pnp_node"
     respawn="false" output="screen">
@@ -18,22 +34,6 @@
     pkg="pnp_ros" type="PNPActionServer.py"
     respawn="false" output="screen">
     <!-- <param name="name" value="value" /> -->
-  </node>
-
-  <node
-    name="LaserScan360Provider"
-    pkg="pnp_ros"
-    type="360LaserScan.py"
-    respawn="false"
-    output="screen">
-  </node>
-	
-  <node
-    name="history_provider"
-    pkg="pnp_ros"
-    type="historyProvider.py"
-    respawn="false"
-    output="screen">
   </node>
 
 <node
