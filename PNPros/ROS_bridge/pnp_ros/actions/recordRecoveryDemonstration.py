@@ -28,6 +28,21 @@ class recordRecoveryDemonstration(AbstractAction):
         folder = '%s/workspaces/museum_ws/data/recover_trajectories'  % os.path.expanduser("~")
         filepath = '%s/%s.txt' % (folder, self.goal_id)
 
+        # start registering additonal info the recovery
+        filename = "demo_" + str(rospy.Time.now().to_nsec())
+        self.goal_id_2 = filename
+        folder = '%s/workspaces/museum_ws/data/passage_trajectories'  % os.path.expanduser("~")
+        filepath = '%s/%s.txt' % (folder, filename)
+        starting_sp(self.goal_id, filepath, ["Pose",
+                                             "CurrentNavigationGoal",
+                                             "InterruptedGoal",
+                                             "LaserScan",
+                                             "LaserScan360",
+                                             "LaserScanWindow",
+                                             "LocalCostmap"
+                                             "CurrentGoal"],
+                                             ["Twist"], True)
+
         ## create interface to starting demonstration
         window_s = tk.Tk()
         self.start = False
@@ -65,6 +80,8 @@ class recordRecoveryDemonstration(AbstractAction):
         if "goal_id" in dir(self):
             stopping_sp = rospy.ServiceProxy("stop_state_action_saver", PNPStopStateActionSaver)
             response = stopping_sp(str(self.goal_id)).succeeded
+            # stop registering addi. info
+            stopping_sp(self.goal_id_2)
             # new demostration signal Publisher
             signal_pub = rospy.Publisher("new_recovery_demonstration", String, latch=True, queue_size=10)
             msg = String("")

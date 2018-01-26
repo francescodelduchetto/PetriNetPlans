@@ -33,7 +33,15 @@ class gotoAndRegister(AbstractAction):
         self.goal_id = filename
         folder = '%s/workspaces/museum_ws/data/passage_trajectories'  % os.path.expanduser("~")
         filepath = '%s/%s.txt' % (folder, filename)
-        starting_sp(self.goal_id, filepath, ["Pose"], ["Twist"], True)
+        starting_sp(self.goal_id, filepath, ["Pose",
+                                             "CurrentNavigationGoal",
+                                             "InterruptedGoal",
+                                             "LaserScan",
+                                             "LaserScan360",
+                                             "LaserScanWindow",
+                                             "LocalCostmap"
+                                             "CurrentGoal"],
+                                             ["Twist"], True)
 
         # cmdvel Publisher
         self._cmdVelPub = rospy.Publisher("cmd_vel", Twist, latch=True, queue_size=10)

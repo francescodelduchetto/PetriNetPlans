@@ -76,11 +76,19 @@ class recoverAction(AbstractAction):
 
             # start registering the recovery
             starting_sp = rospy.ServiceProxy("/start_state_action_saver", PNPStartStateActionSaver)
-            filename = str(rospy.Time.now().to_nsec())
+            filename = "recovery_" + str(rospy.Time.now().to_nsec())
             self.goal_id = filename
             folder = '%s/workspaces/museum_ws/data/passage_trajectories'  % os.path.expanduser("~")
             filepath = '%s/%s.txt' % (folder, filename)
-            starting_sp(self.goal_id, filepath, ["Pose"], ["Twist"], True)
+            starting_sp(self.goal_id, filepath, ["Pose",
+                                                 "CurrentNavigationGoal",
+                                                 "InterruptedGoal",
+                                                 "LaserScan",
+                                                 "LaserScan360",
+                                                 "LaserScanWindow",
+                                                 "LocalCostmap"
+                                                 "CurrentGoal"],
+                                                 ["Twist"], True)
 
             # start recovery service
             start_sp = rospy.ServiceProxy("start_recovery_execution", Empty)
