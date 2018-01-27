@@ -1,11 +1,11 @@
 from AbstractTopicCondition import AbstractTopicCondition
-import sensor_msgs
+from sensor_msgs.msg import LaserScan
 
 class LaserScan(AbstractTopicCondition):
 
     _topic_name = "/scan"
 
-    _topic_type = sensor_msgs.msg.LaserScan
+    _topic_type = LaserScan
 
     def _get_value_from_data(self, data):
 

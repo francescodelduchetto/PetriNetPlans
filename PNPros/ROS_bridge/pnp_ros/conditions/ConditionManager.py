@@ -18,7 +18,8 @@ class ConditionManager():
             name = os.path.splitext(os.path.basename(file))[0]
             try:
                 condition_class = getattr(import_module(name), name)
-            except (ImportError, AttributeError):
+            except (ImportError, AttributeError) as e:
+		rospy.logwarn("Error while initializing " + name + ": " + str(e))
                 continue
             else:
                 if issubclass(condition_class, AbstractCondition) and not inspect.isabstract(condition_class):
