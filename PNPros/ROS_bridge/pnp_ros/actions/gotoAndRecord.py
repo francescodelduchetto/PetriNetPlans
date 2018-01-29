@@ -42,7 +42,8 @@ class gotoAndRecord(AbstractAction):
                                              "LocalCostmap",
                                              "CurrentGoal",
                                              "Tf",
-                                             "Tfstatic"],
+                                             "Tfstatic",
+                                             "Bumper"],
                                              ["Twist"], True)
 
         # cmdvel Publisher

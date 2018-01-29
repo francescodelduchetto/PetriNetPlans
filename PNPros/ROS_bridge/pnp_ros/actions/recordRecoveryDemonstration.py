@@ -69,7 +69,8 @@ class recordRecoveryDemonstration(AbstractAction):
                                              "LocalCostmap",
                                              "CurrentGoal",
                                              "Tf",
-                                             "TfStatic"],
+                                             "TfStatic",
+                                             "Bumper"],
                                              ["Twist"], True)
                 self.params[len(self.params):] = [rospy.Time.now().to_sec()]
                 self.params[len(self.params):] = ["recording"]
