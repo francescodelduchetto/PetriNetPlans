@@ -87,7 +87,9 @@ class recoverAction(AbstractAction):
                                                  "LaserScan360",
                                                  "LaserScanWindow",
                                                  "LocalCostmap",
-                                                 "CurrentGoal"],
+                                                 "CurrentGoal",
+                                                 "Tf",
+                                                 "TfStatic"],
                                                  ["Twist"], True)
 
             # start recovery service
