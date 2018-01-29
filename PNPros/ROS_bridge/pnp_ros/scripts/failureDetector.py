@@ -83,7 +83,7 @@ def load_model(_):
         multiLS = True
         LS = 400. #was 120.
         F_DIM = len(X[0])
-        kernelExpo = GPy.kern.Linear(input_dim=F_DIM,
+        kernelExpo = GPy.kern.RatQuad(input_dim=F_DIM,
                                           #lengthscale=LS,
                                           ARD=multiLS)
         model = GPy.models.GPClassification(X, Y, kernel=kernelExpo)
@@ -173,7 +173,7 @@ if __name__ == "__main__":
                 rospy.logwarn("Errore while predicting")
 		print e
             else:
-		print Yp
+#		print Yp
                 if Yp[0][0] != prev_Yp and Yp > POSITIVE_THRESHOLD:
                     prev_Yp = Yp[0][0]
 
