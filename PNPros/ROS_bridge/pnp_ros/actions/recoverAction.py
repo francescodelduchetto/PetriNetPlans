@@ -89,7 +89,8 @@ class recoverAction(AbstractAction):
                                                  "LocalCostmap",
                                                  "CurrentGoal",
                                                  "Tf",
-                                                 "TfStatic"],
+                                                 "TfStatic",
+                                                 "Bumper"],
                                                  ["Twist"], True)
 
             # start recovery service
