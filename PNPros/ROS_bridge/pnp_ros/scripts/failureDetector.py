@@ -13,7 +13,7 @@ import Tkinter as tk
 from std_msgs.msg import Float64MultiArray, String
 from pnp_msgs.msg import ActionFailure
 
-POSITIVE_THRESHOLD = 0.75
+POSITIVE_THRESHOLD = 0.78
 
 current_scan_window = []
 current_scan_window_data = None
@@ -80,10 +80,10 @@ def load_model(_):
     model_lock.acquire()
     try:
         # define model
-        multiLS = True
+        multiLS = False
         LS = 400. #was 120.
         F_DIM = len(X[0])
-        kernelExpo = GPy.kern.RatQuad(input_dim=F_DIM,
+        kernelExpo = GPy.kern.Linear(input_dim=F_DIM,
                                           #lengthscale=LS,
                                           ARD=multiLS)
         model = GPy.models.GPClassification(X, Y, kernel=kernelExpo)
