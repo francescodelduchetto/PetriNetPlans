@@ -40,7 +40,9 @@ class gotoAndRecord(AbstractAction):
                                              "LaserScan360",
                                              "LaserScanWindow",
                                              "LocalCostmap",
-                                             "CurrentGoal"],
+                                             "CurrentGoal",
+                                             "Tf",
+                                             "Tfstatic"],
                                              ["Twist"], True)
 
         # cmdvel Publisher

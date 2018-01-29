@@ -67,8 +67,10 @@ class recordRecoveryDemonstration(AbstractAction):
                                              "LaserScan360",
                                              "LaserScanWindow",
                                              "LocalCostmap",
-                                             "CurrentGoal"],
-                                             ["Twist"], True) 
+                                             "CurrentGoal",
+                                             "Tf",
+                                             "TfStatic"],
+                                             ["Twist"], True)
                 self.params[len(self.params):] = [rospy.Time.now().to_sec()]
                 self.params[len(self.params):] = ["recording"]
             else:
