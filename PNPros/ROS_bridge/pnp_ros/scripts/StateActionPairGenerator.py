@@ -210,12 +210,17 @@ class StateActionPairGenerator(ConditionListener):
                     else:
                         break
 
-
-
         # Save in the bag
-        topic_message = condition_instance.get_data() # the actual topic message
-        topic_name = condition_instance._topic_name # the type of topic message
-        with self._bags_lock:
-            for bag in self._saving_bags.values():
-                #print topic_name, topic_message
-                bag.write(topic_name, topic_message)
+        instances = []
+        instances.append(condition_instance)
+        instances.append(self._condition_manager._condition_instances["CurrentGoal"])
+        instances.append(self._condition_manager._condition_instances["CurrentNavigationGoal"])
+        instances.append(self._condition_manager._condition_instances["ClosestNode"])
+        instances.append(self._condition_manager._condition_instances["CurrentNode"])
+        for instance in instances:
+            topic_message = instance.get_data() # the actual topic message
+            topic_name = instance._topic_name # the type of topic message
+            with self._bags_lock:
+                for bag in self._saving_bags.values():
+                    #print topic_name, topic_message
+                    bag.write(topic_name, topic_message)
