@@ -1,5 +1,5 @@
 from AbstractTopicCondition import AbstractTopicCondition
-from std_msgs/Bool
+from std_msgs.msg import Bool
 
 class Bumper(AbstractTopicCondition):
 
