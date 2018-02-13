@@ -25,13 +25,13 @@ class recordRecoveryDemonstration(AbstractAction):
         # start recording scan and twist
         starting_sp = rospy.ServiceProxy("start_state_action_saver", PNPStartStateActionSaver)
         self.goal_id = rospy.Time.now().to_nsec()
-        folder = '%s/workspaces/museum_ws/data/recover_trajectories'  % os.path.expanduser("~")
+        folder = '%s/catkin_ws/data/recover_trajectories'  % os.path.expanduser("~")
         filepath = '%s/%s.txt' % (folder, self.goal_id)
 
         # start registering additonal info the recovery
         filename = "demo_" + str(rospy.Time.now().to_nsec())
         self.goal_id_2 = filename
-        folder = '%s/workspaces/museum_ws/data/passage_trajectories'  % os.path.expanduser("~")
+        folder = '%s/catkin_ws/data/passage_trajectories'  % os.path.expanduser("~")
         filepath_2 = '%s/%s.txt' % (folder, filename)
 
         ## create interface to starting demonstration

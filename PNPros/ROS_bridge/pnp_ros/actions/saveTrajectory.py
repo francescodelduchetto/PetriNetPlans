@@ -14,7 +14,7 @@ class saveTrajectory(AbstractAction):
 
         # Save the new trajectory
         scan_window = None
-        folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
+        folder = '%s/catkin_ws/data/detect_trajectories'  % os.path.expanduser("~")
         if len(self.params) > 0 and self.params[0] == "neg":
             scan_window = rospy.wait_for_message("scan_history", Float64MultiArray, timeout=2)
             filename = '%s/neg_%s.traj' % (folder, rospy.Time.now().to_nsec())
@@ -64,7 +64,7 @@ class saveTrajectory(AbstractAction):
         print model
 
         ## save model
-        folder = '%s/workspaces/museum_ws/data/GPmodels'  % os.path.expanduser("~")
+        folder = '%s/catkin_ws/data/GPmodels'  % os.path.expanduser("~")
         np.save('%s/detector_model_params.npy' % folder, model.param_array)
         np.save('%s/detector_model_X.npy' % folder, X)
         np.save('%s/detector_model_Y.npy' % folder, Y)
