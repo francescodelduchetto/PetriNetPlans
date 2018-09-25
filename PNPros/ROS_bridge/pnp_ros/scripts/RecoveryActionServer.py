@@ -61,7 +61,8 @@ class RecoveryActionServer():
 
     def _update_model(self, _):
         # extract target and label data from trajectories
-        folder = '%s/workspaces/museum_ws/data/recover_trajectories'  % os.path.expanduser("~")
+	ws_home = os.environ["WS_HOME"]
+        folder = ws_home + '/data/recover_trajectories'
         Xtrain = []
         Ytrain = []
         for filename in os.listdir(folder):

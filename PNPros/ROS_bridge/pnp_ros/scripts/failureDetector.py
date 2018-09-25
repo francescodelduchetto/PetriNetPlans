@@ -35,7 +35,8 @@ def save_new_trajectory(type="positive", trace_data=None):
     if trace_data is None:
         trace_data = current_scan_window_data
 
-    folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
+    ws_home = os.environ["WS_HOME"]
+    folder = ws_home + '/data/detect_trajectories'
     if type == "negative":
         filename = '%s/neg_%s.traj' % (folder, rospy.Time.now().to_nsec())
     elif type == "positive":
@@ -52,7 +53,8 @@ def  failure_confirmation(data):
 def load_model(_):
     global model, model_lock, meanX, stdX
 
-    folder = '%s/workspaces/museum_ws/data/detect_trajectories'  % os.path.expanduser("~")
+    ws_home = os.environ["WS_HOME"]
+    folder = ws_home + '/data/detect_trajectories'
     ## Train the model with the new trajectory
     X = []
     Y = []
