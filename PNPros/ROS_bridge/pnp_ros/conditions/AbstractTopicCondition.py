@@ -11,21 +11,22 @@ class AbstractTopicCondition(AbstractCondition):
         rospy.Subscriber(self._topic_name, self._topic_type, self._callback)
 
         # check if it is a latch message, hence we could already have some message
+        self.last_value = None
+        self.last_data = None
         try:
             msg = rospy.wait_for_message(self._topic_name, self._topic_type, timeout=0.5)
             self.last_data = msg
             self.last_value = self._get_value_from_data(msg)
         except rospy.ROSException: # timeout exceeded (no message waiting)
             # last_data will be None until the subscribed topic will return some data
-            self.last_value = None
-            self.last_data = None
+            pass
 
     def _callback(self, data):
         self.last_data = data
-        curr_data = self._get_value_from_data(data)
+        curr_value = self._get_value_from_data(data)
 
-        if self.last_value != curr_data:
-            self.last_value = curr_data
+        if self.last_value != curr_value:
+            self.last_value = curr_value
 
             # update all the listeners
             for listener in self._updates_listeners:
