@@ -89,9 +89,14 @@ class PNPCmd(PNPCmd_Base):
 
         # wait for connections on action_cmd topic
         conn = self.pub_actioncmd.get_num_connections()
-        #rospy.loginfo('Connections: %d', conn)
+        rospy.loginfo('Connections: %d', conn)
         while conn==0:
+            # TODO maybe this helps: declare again the publisher
+            key = TOPIC_PNPACTIONCMD #get_robot_key(TOPIC_PNPACTIONCMD)
+            self.pub_actioncmd = rospy.Publisher(key, std_msgs.msg.String, queue_size=10)
+            print("Publisher %s" %key)
             self.rate.sleep()
+
             conn = self.pub_actioncmd.get_num_connections()
             rospy.loginfo('Connections: %d', conn)
 
@@ -106,7 +111,7 @@ class PNPCmd(PNPCmd_Base):
             time.sleep(0.5)
         else:
             rospy.logwarn("No action is currently running to be terminated")
-        os._exit(1)
+        os._exit(os.EX_OK)
 
     def action_cmd(self,action,params,cmd):
         if (cmd=='stop'):
