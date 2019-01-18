@@ -1,7 +1,7 @@
 import os
 import rospy, rosbag
 import multiprocessing
-from AbstractTopicCondition import ConditionListener
+from AbstractCondition import ConditionListener
 from pnp_msgs.srv import PNPStartStateActionSaver, PNPStartStateActionSaverResponse,\
                          PNPStopStateActionSaver, PNPStopStateActionSaverResponse
 
@@ -114,7 +114,7 @@ class StateActionPairGenerator(ConditionListener):
             file = self._saving_files[goal]
             for timestep in range(len(self._states_history[goal])):
                 if len(self._states_history[goal][timestep]) < len(self._request_info[goal]["state_conditions"]) or \
-			len(self._actions_history[goal][timestep]) < len(self._request_info[goal]["action_conditions"]):
+            len(self._actions_history[goal][timestep]) < len(self._request_info[goal]["action_conditions"]):
                     continue
                 for i, state_el in enumerate(self._states_history[goal][timestep]):
                     if i>0:

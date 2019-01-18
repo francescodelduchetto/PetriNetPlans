@@ -14,3 +14,11 @@ class AbstractCondition():
     @abstractmethod
     def get_value(self):
         raise NotImplementedError()
+
+
+class ConditionListener():
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def receive_update(self, condition_name, condition_value):
+        raise NotImplementedError()
