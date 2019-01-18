@@ -22,11 +22,16 @@ class AbstractTopicCondition(AbstractCondition):
 
     def _callback(self, data):
         self.last_data = data
-        self.last_value = self._get_value_from_data(data)
+        curr_data = self._get_value_from_data(data)
 
-        # update all the listeners
-        for listener in self._updates_listeners:
-            listener.receive_update(self)
+        if self.curr_data != curr_data:
+            self.last_value = curr_data
+
+            # update all the listeners
+            for listener in self._updates_listeners:
+                listener.receive_update(self)
+
+
 
     def get_value(self):
         return self.last_value
