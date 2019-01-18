@@ -24,7 +24,7 @@ class AbstractTopicCondition(AbstractCondition):
         self.last_data = data
         curr_data = self._get_value_from_data(data)
 
-        if self.curr_data != curr_data:
+        if self.last_value != curr_data:
             self.last_value = curr_data
 
             # update all the listeners
