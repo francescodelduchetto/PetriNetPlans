@@ -7,12 +7,13 @@ class AbstractTopicCondition(AbstractCondition):
 
     def __init__(self):
         super(AbstractTopicCondition, self).__init__()
+        self.last_value = None
+        self.last_data = None
+        
         # subscribe to the topic with a callback
         rospy.Subscriber(self._topic_name, self._topic_type, self._callback)
 
         # check if it is a latch message, hence we could already have some message
-        self.last_value = None
-        self.last_data = None
         try:
             msg = rospy.wait_for_message(self._topic_name, self._topic_type, timeout=0.5)
             self.last_data = msg
