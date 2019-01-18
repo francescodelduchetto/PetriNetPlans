@@ -1,6 +1,6 @@
 import rospy
 from abc import ABCMeta, abstractproperty, abstractmethod
-from AbstractCondition import AbstractCondition
+from AbstractCondition import AbstractCondition, ConditionListener
 
 class AbstractTopicCondition(AbstractCondition):
     __metaclass__ = ABCMeta
@@ -54,10 +54,3 @@ class AbstractTopicCondition(AbstractCondition):
 
     def get_name(self):
         return self.__class__.__name__
-
-class ConditionListener():
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def receive_update(self, condition_name, condition_value):
-        raise NotImplementedError()

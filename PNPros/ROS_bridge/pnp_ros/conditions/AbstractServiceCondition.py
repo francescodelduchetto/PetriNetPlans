@@ -1,6 +1,6 @@
 import rospy
 from abc import ABCMeta, abstractproperty
-from AbstractCondition import AbstractCondition
+from AbstractCondition import AbstractCondition, ConditionListener
 
 class AbstractServiceCondition(AbstractCondition):
     __metaclass__ = ABCMeta
@@ -9,7 +9,7 @@ class AbstractServiceCondition(AbstractCondition):
         super(AbstractServiceCondition, self).__init__()
         # create service proxy
         try:
-            rospy.wait_for_service(self._service_name, timeout=1)
+            rospy.wait_for_service(self._service_name, timeout=0.5)
         except rospy.ROSException as e:
             rospy.logwarn("Timeout waiting for service %s" % self._service_name)
 
@@ -26,3 +26,9 @@ class AbstractServiceCondition(AbstractCondition):
     @abstractproperty
     def _service_type(self):
         raise NotImplementedError()
+
+    def register_updates_listener(self, obj):
+        if issubclass(obj.__class__, ConditionListener):
+            self._updates_listeners.append(obj)
+        else:
+            rospy.logwarn("Object " + str(obj.__class__) + " is not a ConditionListener subclass, cannot be registered as listener")
