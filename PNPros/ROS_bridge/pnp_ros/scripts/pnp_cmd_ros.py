@@ -6,7 +6,8 @@ import sys
 import os
 import roslib, rospy
 import time
-
+import string
+import random
 import pnp_msgs.msg, pnp_msgs.srv
 
 import std_msgs.msg
@@ -56,8 +57,10 @@ class PNPCmd(PNPCmd_Base):
 
         return [action, params, cmd]
 
-    def begin(self):
-        rospy.init_node(NODE)
+    def begin(self, node_name=None):
+        if node_name is None:
+            node_name = 'plan_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+        rospy.init_node(node_name)
 
         rospy.on_shutdown(self.terminate)
 
@@ -85,9 +88,14 @@ class PNPCmd(PNPCmd_Base):
 
         # wait for connections on action_cmd topic
         conn = self.pub_actioncmd.get_num_connections()
-        #rospy.loginfo('Connections: %d', conn)
+        rospy.loginfo('Connections: %d', conn)
         while conn==0:
+            # TODO maybe this helps: declare again the publisher
+            key = TOPIC_PNPACTIONCMD #get_robot_key(TOPIC_PNPACTIONCMD)
+            self.pub_actioncmd = rospy.Publisher(key, std_msgs.msg.String, queue_size=10)
+            print("Publisher %s" %key)
             self.rate.sleep()
+
             conn = self.pub_actioncmd.get_num_connections()
             rospy.loginfo('Connections: %d', conn)
 
@@ -99,10 +107,10 @@ class PNPCmd(PNPCmd_Base):
         if self._current_action is not None:
             rospy.logwarn("Terminating action " + str(self._current_action[0]))
             self.action_cmd(self._current_action[0], self._current_action[1], "stop")
-            # time.sleep(1)
+            time.sleep(0.5)
         else:
             rospy.logwarn("No action is currently running to be terminated")
-        os._exit(1)
+        os._exit(os.EX_OK)
 
     def action_cmd(self,action,params,cmd):
         if (cmd=='stop'):

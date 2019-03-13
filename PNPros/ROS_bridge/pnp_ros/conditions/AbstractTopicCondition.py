@@ -1,12 +1,15 @@
 import rospy
 from abc import ABCMeta, abstractproperty, abstractmethod
-from AbstractCondition import AbstractCondition
+from AbstractCondition import AbstractCondition, ConditionListener
 
 class AbstractTopicCondition(AbstractCondition):
     __metaclass__ = ABCMeta
 
     def __init__(self):
         super(AbstractTopicCondition, self).__init__()
+        self.last_value = None
+        self.last_data = None
+        
         # subscribe to the topic with a callback
         rospy.Subscriber(self._topic_name, self._topic_type, self._callback)
 
@@ -17,16 +20,20 @@ class AbstractTopicCondition(AbstractCondition):
             self.last_value = self._get_value_from_data(msg)
         except rospy.ROSException: # timeout exceeded (no message waiting)
             # last_data will be None until the subscribed topic will return some data
-            self.last_value = None
-            self.last_data = None
+            pass
 
     def _callback(self, data):
         self.last_data = data
-        self.last_value = self._get_value_from_data(data)
+        curr_value = self._get_value_from_data(data)
 
-        # update all the listeners
-        for listener in self._updates_listeners:
-            listener.receive_update(self)
+        if self.last_value != curr_value:
+            self.last_value = curr_value
+
+            # update all the listeners
+            for listener in self._updates_listeners:
+                listener.receive_update(self)
+
+
 
     def get_value(self):
         return self.last_value
@@ -54,10 +61,3 @@ class AbstractTopicCondition(AbstractCondition):
 
     def get_name(self):
         return self.__class__.__name__
-
-class ConditionListener():
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def receive_update(self, condition_name, condition_value):
-        raise NotImplementedError()

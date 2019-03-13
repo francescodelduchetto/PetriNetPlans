@@ -17,7 +17,6 @@
     name="PNPActionServer"
     pkg="pnp_ros" type="PNPActionServer.py"
     respawn="false" output="screen">
-    <!-- <param name="name" value="value" /> -->
   </node>
 
   <!-- <node
