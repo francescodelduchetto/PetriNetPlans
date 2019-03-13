@@ -46,7 +46,7 @@ class PNPCmd_Base(object):
     def action_params_split(self, astr):
         astr = astr.strip()
         c = astr.find('_')
-        if not c:
+        if c < 0:
             action = astr
             params = ''
         else:
