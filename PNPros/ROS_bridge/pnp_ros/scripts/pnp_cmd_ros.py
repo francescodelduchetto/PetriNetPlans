@@ -81,7 +81,6 @@ class PNPCmd(PNPCmd_Base):
         rospy.wait_for_service(key)
         print("Service %s OK" %key)
 
-
         # self.plan_folder = rospy.get_param(PNPPLANFOLDER) #get_robot_key(PNPPLANFOLDER))
 
         # wait for connections on action_cmd topic
@@ -174,15 +173,12 @@ class PNPCmd(PNPCmd_Base):
             print("ERROR: plan cmd %s %s undefined!" %(planname,cmd))
         self.rate.sleep()
 
-
-
 def main():
     a = PNPCmd()
     [action, params, cmd] = a.init()
     a.begin()
     a.action_cmd(action, params, cmd)
     a.end()
-
 
 if __name__ == "__main__":
     main()
