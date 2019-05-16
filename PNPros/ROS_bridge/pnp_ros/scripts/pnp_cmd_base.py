@@ -112,13 +112,14 @@ class PNPCmd_Base(object):
             run = False  # exit
             if (not c): # normal termination
                 self.printindent()
-                if (r=='success'):
-                    print("  %s%s %s -> %s%s" %(tcol.OKGREEN,action,params,r,tcol.ENDC))
-                else:
-                    print("  %s%s %s -> %s%s" %(tcol.FAIL,action,params,r,tcol.ENDC))
+                self.action_cmd_base(action, params, r)
+                # if (r=='success'):
+                #     print("  %s%s %s -> %s%s" %(tcol.OKGREEN,action,params,r,tcol.ENDC))
+                # else:
+                #     print("  %s%s %s -> %s%s" %(tcol.FAIL,action,params,r,tcol.ENDC))
             else: # interrupt
                 r = 'interrupt'
-                self.action_cmd_base(action, params, 'interrupt')
+                self.action_cmd_base(action, params, r)
                 while self.action_status(action)=='running':
                     time.sleep(0.1)
                 self.execlevel += 1

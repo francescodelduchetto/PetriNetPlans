@@ -79,12 +79,12 @@ class ActionManager():
                     goal.id : action_instance
                 })
 
-                print "[AM] Starting " + goal.name + " " + goal.params
+                print "[AM] Starting " + goal.name + " " + goal.params + " " + str(goal.id)
 
                 # start the action
                 self._action_instances[goal.id].start_action()
             else:
-                print "[AM] Stopping " + goal.name + " " + goal.params
+                print "[AM] Stopping " + goal.name + " " + goal.params + " " + str(goal.id)
                 # send the result
                 rospy.set_param(get_robot_key(PARAM_PNPACTIONSTATUS) + goalhandler.get_goal().name, ACTION_SUCCESS)
 
@@ -98,10 +98,11 @@ class ActionManager():
     def interrupt_action(self, goalhandler):
         ''' Action interrupted before it finished the execution '''
         goal = goalhandler.get_goal()
-        print "[AM] Interrupting " + goal.name + " " + goal.params
+        print "[AM] Interrupting " + goal.name + " " + goal.params + " " + str(goal.id)
 
         # accept the goal
         goalhandler.set_accepted()
+
 
         # stop the action
         if goal.id in self._action_instances.keys():
