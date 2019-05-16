@@ -59,7 +59,7 @@ class PNPCmd(PNPCmd_Base):
 
     def begin(self, node_name=None):
         if node_name is None:
-            node_name = 'plan_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+            node_name = 'plan_' #+ ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
         rospy.init_node(node_name)
 
         rospy.on_shutdown(self.terminate)
@@ -130,10 +130,9 @@ class PNPCmd(PNPCmd_Base):
             # the action. Therefore we wait here for that to happen.
             self.set_action_status(action, ACTION_STARTED)
 
-        # print "ACTIONCMD", action+"_"+params+" "+cmd
+       # print "ACTIONCMD", action+"_"+params+" "+cmd
         data = action+"_"+params+" "+cmd
         self.pub_actioncmd.publish(data)
-        # rospy.Rate(0.1).sleep()
 
     def set_action_status(self, action, status):
         key = get_robot_key(PARAM_PNPACTIONSTATUS)+action
