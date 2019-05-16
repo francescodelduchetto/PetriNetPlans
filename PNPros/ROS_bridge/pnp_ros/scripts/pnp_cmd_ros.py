@@ -31,16 +31,12 @@ PKG = 'pnp_ros'
 NODE = 'pnp_cmd'
 
 # ROS names (see pnp_ros/include/pnp_ros/names.h)
-
-
 class PNPCmd(PNPCmd_Base):
 
     def __init__(self):
         PNPCmd_Base.__init__(self)
         self.pub_actioncmd = None
         self.pub_plantoexec = None
-        self._current_action_starttime = None
-
 
     def init(self):
         parser = argparse.ArgumentParser()
@@ -64,7 +60,7 @@ class PNPCmd(PNPCmd_Base):
 
         rospy.on_shutdown(self.terminate)
 
-        self._current_action = None
+        self._current_actions = {}
 
         self.rate = rospy.Rate(2) # hz
         self.rate.sleep()
@@ -104,22 +100,30 @@ class PNPCmd(PNPCmd_Base):
         self.terminate()
 
     def terminate(self):
-        if self._current_action is not None:
-            rospy.logwarn("Terminating action " + str(self._current_action[0]))
-            self.action_cmd(self._current_action[0], self._current_action[1], "stop")
+        for action in self._current_actions.keys():
+            rospy.logwarn("Terminating action " + action)
+            self.action_cmd(action, self._current_actions[action]["params"], "stop")
             time.sleep(0.5)
-        else:
-            rospy.logwarn("No action is currently running to be terminated")
+        # else:
+        #     rospy.logwarn("No action is currently running to be terminated")
         os._exit(os.EX_OK)
 
     def action_cmd(self,action,params,cmd):
-        if (cmd=='stop'):
+        if (cmd=='stop' or cmd=='interrupt'):
             cmd = 'interrupt'
-            self._current_action_starttime = None
-            self._current_action = None
+            if action in self._current_actions.keys():
+                del self._current_actions[action]
         elif (cmd=='start'):
-            self._current_action_starttime = time.time()
-            self._current_action = [action, params]
+            if action in self._current_actions.keys():
+                rospy.logerr("You want to start a %s action while another %s action is already running! This is not allowed." % (action, action))
+            else:
+                self._current_actions.update({
+                        action: {"starttime": time.time(), "params": params}
+                })
+            self.set_action_status(action, ACTION_STARTED)
+        elif (cmd=='end' or cmd=='success' or cmd=='failure'):
+            if action in self._current_actions.keys():
+                del self._current_actions[action]
             # remove parameter associated with the action before strting it
             # key = get_robot_key(PARAM_PNPACTIONSTATUS)+action
             # try:
@@ -128,12 +132,14 @@ class PNPCmd(PNPCmd_Base):
             #     pass
             # the PNP action server will change the status to running after it stated
             # the action. Therefore we wait here for that to happen.
-            self.set_action_status(action, ACTION_STARTED)
 
-        # print "ACTIONCMD", action+"_"+params+" "+cmd
-        data = action+"_"+params+" "+cmd
+        if len(params) > 0:
+            data = " ".join(["_".join([action, params]), cmd])
+        else:
+            data = " ".join([action, cmd])
+        print "ACTIONCMD", data
         self.pub_actioncmd.publish(data)
-        # rospy.Rate(0.1).sleep()
+        # time.sleep(0.5)
 
     def set_action_status(self, action, status):
         key = get_robot_key(PARAM_PNPACTIONSTATUS)+action
@@ -158,9 +164,11 @@ class PNPCmd(PNPCmd_Base):
         return r
 
     def action_starttime(self, action):
-        if self._current_action_starttime is None:
+        if action in self._current_actions.keys():
+            return self._current_actions[action]["starttime"]
+        else:
             rospy.logwarn("Current action starttime not set.")
-        return self._current_action_starttime
+            return None
 
     def get_condition(self, cond):
         try:
