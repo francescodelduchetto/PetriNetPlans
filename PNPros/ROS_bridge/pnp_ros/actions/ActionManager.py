@@ -157,6 +157,9 @@ class ActionManager():
             rospy.logwarn("action " + module_name + " not implemented")
             print e
             pass
+        except Exception as e:
+            rospy.logwarn("Exception instantiating action %s: %s" % (module_name, e))
+            pass
         else:
             try:
                 if issubclass(action_class, AbstractAction) and not inspect.isabstract(action_class):
